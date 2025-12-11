@@ -1,35 +1,46 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { Tabs } from "expo-router";
+import { Stack } from "expo-router";
+import { SQLiteDatabase, SQLiteProvider } from "expo-sqlite";
+import { StatusBar } from "expo-status-bar";
 
-export default function TabLayout() {
+const createDbIfNeeded = async (db: SQLiteDatabase) => {
+  //
+  console.log("Creating database");
+  try {
+    // Create a table
+    const response = await db.execAsync(
+      "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, email TEXT, image TEXT)"
+    );
+    console.log("Database created", response);
+  } catch (error) {
+    console.error("Error creating database:", error);
+  }
+};
+
+export default function RootLayout() {
   return (
-    <Tabs screenOptions={{ 
-      tabBarActiveTintColor: "crimson",
-      tabBarInactiveTintColor: "gray",
-      tabBarStyle: { 
-        backgroundColor: "#FFFDD0",
-        borderTopColor: "crimson",
-        borderTopWidth: 2, },
-      }}
-      >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="home" color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: "Settings",
-          tabBarIcon: ({ color }) => (
-            <FontAwesome size={28} name="cog" color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+    <>
+      <SQLiteProvider databaseName="test.db" onInit={createDbIfNeeded}>
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: "crimson" },
+            headerTintColor: "white",
+            contentStyle: { backgroundColor: "#FFFDD0" }, // cream
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+          <Stack.Screen
+            name="modal"
+            options={{
+              presentation: "modal",
+              headerStyle: { backgroundColor: "crimson" },
+              headerTintColor: "white",
+              contentStyle: { backgroundColor: "#FFFDD0" },
+            }}
+          />
+        </Stack>
+      </SQLiteProvider>
+      <StatusBar style="light" />
+    </>
   );
 }
